@@ -1,0 +1,61 @@
+import secrets
+import string
+import sys
+
+def generate_password(length=16, use_lower=True, use_upper=True, use_digits=True, use_special=True):
+    """
+    Generate a cryptographically secure random password
+    
+    Parameters:
+    length (int): Password length (default: 16)
+    use_lower (bool): Include lowercase letters
+    use_upper (bool): Include uppercase letters
+    use_digits (bool): Include digits
+    use_special (bool): Include special characters
+    
+    Returns:
+    str: Generated password
+    """
+    # Character pools
+    pools = []
+    if use_lower: pools.append(string.ascii_lowercase)
+    if use_upper: pools.append(string.ascii_uppercase)
+    if use_digits: pools.append(string.digits)
+    if use_special: pools.append(string.punctuation)
+    
+    # Validate input
+    if not pools:
+        raise ValueError("At least one character type must be selected")
+    if length < 8:
+        raise ValueError("Password length must be at least 8 characters")
+    
+    # Generate password with guaranteed character diversity
+    password = []
+    for pool in pools:
+        password.append(secrets.choice(pool))
+    
+    # Fill remaining length
+    all_chars = ''.join(pools)
+    password += [secrets.choice(all_chars) for _ in range(length - len(password))]
+    
+    # Cryptographically secure shuffle
+    secrets.SystemRandom().shuffle(password)
+    return ''.join(password)
+
+if __name__ == "__main__":
+    # Generate password with random settings for maximum variety
+    config = {
+        'length': secrets.choice(range(14, 22)),
+        'use_lower': True,
+        'use_upper': True,
+        'use_digits': secrets.choice([True, False]),
+        'use_special': secrets.choice([True, False])
+    }
+    
+    try:
+        print(f"Generated password: {generate_password(**config)}")
+        print(f"Settings used: Length={config['length']}, "
+              f"Digits={config['use_digits']}, Special={config['use_special']}")
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
